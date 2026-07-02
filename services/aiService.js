@@ -15,44 +15,81 @@ const model = genAI.getGenerativeModel({
 });
 
 
-const fallbackPlan = {
-  workoutPlan: [
-    "Warm up 10 minutes",
-    "Push ups 3 sets",
-    "Squats 3 sets",
-    "Plank 30 seconds",
-    "Walking 20 minutes"
-  ],
+const getFallbackPlan = (fitnessDetails) => {
+  const {
+    gender,
+    fitnessGoal,
+    activityLevel
+  } = fitnessDetails;
 
-  dietSuggestions: [
-    "Protein rich foods",
-    "Fruits and vegetables",
-    "Drink enough water"
-  ],
+  let workoutPlan = [];
+  let dietSuggestions = [];
+  let calories = "";
 
-  dailyCalorieRecommendation:
-    "2200 calories",
+  if (fitnessGoal === "Weight Loss") {
+    workoutPlan = [
+      "30 min brisk walk",
+      "Jumping Jacks - 3 sets",
+      "Bodyweight Squats - 3 sets",
+      "Mountain Climbers - 3 sets",
+      "Stretching - 10 min"
+    ];
 
-  weeklyFitnessSchedule: [
-    "Monday - Strength",
-    "Tuesday - Cardio",
-    "Wednesday - Rest",
-    "Thursday - Full Body",
-    "Friday - Cardio",
-    "Saturday - Stretching",
-    "Sunday - Rest"
-  ],
+    dietSuggestions = [
+      "High-protein meals",
+      "Reduce sugar",
+      "Drink 3L water"
+    ];
 
-  fitnessTips: [
-    "Sleep properly",
-    "Stay hydrated",
-    "Be consistent"
-  ],
+    calories = "1800-2200 kcal";
+  }
 
-  weeklyMotivationMessage:
-    "Consistency creates results."
+  if (fitnessGoal === "Muscle Gain") {
+    workoutPlan = [
+      "Bench Press",
+      "Squats",
+      "Deadlifts",
+      "Pull-ups",
+      "Shoulder Press"
+    ];
+
+    dietSuggestions = [
+      "Chicken/Fish/Eggs",
+      "Rice & Oats",
+      "Protein Shake"
+    ];
+
+    calories = "2600-3000 kcal";
+  }
+
+  if (gender === "Female") {
+    workoutPlan.push("Yoga 20 minutes");
+  } else {
+    workoutPlan.push("Push-ups 3 sets");
+  }
+
+  return {
+    workoutPlan,
+    dietSuggestions,
+    dailyCalorieRecommendation: calories,
+    weeklyFitnessSchedule: [
+      "Monday - Workout",
+      "Tuesday - Cardio",
+      "Wednesday - Rest",
+      "Thursday - Workout",
+      "Friday - Cardio",
+      "Saturday - Full Body",
+      "Sunday - Rest"
+    ],
+    fitnessTips: [
+      "Sleep 7-8 hours",
+      "Stay hydrated",
+      "Exercise consistently"
+    ],
+    weeklyMotivationMessage:
+      "Small progress every day leads to big results."
+  };
 };
-
 
 const generateFitnessPlan = async (fitnessDetails) => {
 
@@ -71,15 +108,15 @@ const generateFitnessPlan = async (fitnessDetails) => {
 
     const cleanedText =
       text
-      .replace(/```json/g,"")
-      .replace(/```/g,"")
-      .trim();
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
 
     return JSON.parse(cleanedText);
 
 
-  } catch(error){
+  } catch (error) {
 
 
     console.log(
@@ -89,14 +126,10 @@ const generateFitnessPlan = async (fitnessDetails) => {
 
 
     // if Gemini busy
-    if(error.status === 503){
+    if (error.status === 503) {
+      console.log("Returning fallback plan");
 
-      console.log(
-        "Returning fallback plan"
-      );
-
-      return fallbackPlan;
-
+      return getFallbackPlan(fitnessDetails);
     }
 
 
